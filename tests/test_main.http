@@ -1,0 +1,13 @@
+# Test your FastAPI endpoints
+
+GET {{protocol}}{{host}}:{{port}}/
+# @no-redirect
+Accept: application/json
+
+###
+
+GET {{protocol}}{{host}}:{{port}}/hello/User/
+# @no-redirect
+Accept: application/json
+
+###
