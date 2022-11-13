@@ -1,4 +1,58 @@
-"""REST API BACKEND MICROSERVICE"""
+"""---
+# Welcome to the Twiterlon STORE
+
+# These are our microtransaction type products:
+
+</br></br></br></br>
+
+<p align="center"><b><font size="+2">
+You can buy this badge for a cost of $99 one purchase, use forever
+</font></b></p>
+<p align="center"><img src="./static/verified.png" alt="drawing" width="200"/></p>
+
+</br></br></br></br>
+
+<p align="center"><b><font size="+2">
+You can buy this badge for a cost of $50 renewed anually
+</font></b></p>
+<p align="center"><img src="./static/tick-mark.png" alt="drawing" width="100"/></p>
+
+</br></br></br></br>
+
+<p align="center"><b><font size="+2">
+OR, You can buy this badge for a cost of $10 monthly...
+</font></b></p>
+<p align="center"><img src="./static/quality.png" alt="drawing" width="100"/></p>
+
+## Tick Mark Comparison Table
+
+| **Tick Mark Color** | **Blue** | **Green** | **Yellow** |
+|:-------------------:|:--------:|:---------:|:----------:|
+|      **cost**       |    99    |    50     |     10     |
+|     **expires**     |  NEVER   |  Yearly   |  Monthly   |
+|    **currency**     |   USD    |    USD    |    USD     |
+
+---
+
+# Assets attribution
+
+<a href="https://www.flaticon.com/free-icons/twitter" title="twitter icons">Twitter icons created by Freepik - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/verified" title="verified icons">Verified icons created by kmg design - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/check-mark" title="check mark icons">Check mark icons created by elvnsands - Flaticon</a>
+
+<a href="https://www.flaticon.com/free-icons/check-mark" title="check mark icons">Check mark icons created by - Flaticon</a>
+
+---
+
+<p align="center"><img src="./static/very-official-quotes.png" alt="very-official-quotes" width="1000"/></p>
+
+---
+
+# Useful Links
+"""
+
 from pathlib import Path
 
 from fastapi import Depends, FastAPI
@@ -11,15 +65,13 @@ from starlette.status import (
 )
 import fastapi.openapi.models
 from loguru import logger
-
 from src.core.swagger_utils import build_response
-from src.core.custom_logger import custom_loguru_app_logger
 from src.core.openapi_mods import (
     custom_openapi,
     get_swagger_ui_html as new_swagger,
 )
 from src import router as v1_router, tags_metadata
-from src.core.config import HEADERS, PROJECT_NAME
+from src.core.config import HEADERS, STAGE
 from src.core.pre_after_requests import (
     CORSMiddleware,
     error_422_handler,
@@ -33,25 +85,31 @@ STATICS_DIR = HERE.joinpath("static")
 MOCKS_GENERAL = HERE.joinpath("api_default_mocks")
 NOT_IN_DYNAMO = MOCKS_GENERAL.joinpath("mock_dynamo_not_found_500.json")
 UNEXPECTED = MOCKS_GENERAL.joinpath("something_unexpected_happened_500.json")
-FIELD_REQUIRED = MOCKS_GENERAL.joinpath("generic_model_field_required_422.json")
+FIELD_REQUIRED = MOCKS_GENERAL.joinpath(
+    "generic_model_field_required_422.json"
+)
 BAD_TYPE = MOCKS_GENERAL.joinpath("model_type_does_not_match_422.json")
-
+REPO = 'https://github.com/yokharian/black-belt-2022-LATAM-DATABASE'
 app = FastAPI(
-    title=PROJECT_NAME,
+    title=f"REST-API Twiterlon - {STAGE}".upper(),
     version="v1",
     description=__doc__,
     docs_url="/",
     redoc_url="/docs",
-    debug=False,  # True will cause pre&after requests just skip
+    debug=False,  # True will cause pre&after requests to just skip
     exception_handlers={
         HTTP_500_INTERNAL_SERVER_ERROR: error_500_handler,
         RequestValidationError: error_422_handler,
     },
-    # contact={"name": "", "email": "", "url": ""},
-    terms_of_service="",
+    contact={
+        "name": "Developer Sofia Escobedo",
+        "email": "cdmx.sofia@gmail.com",
+        "url": "https://github.com/yokharian",
+    },
+    terms_of_service=REPO,
     license_info={
-        "name": "Apache 2.0",
-        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+        "name": "MIT LICENSE",
+        "url": f"{REPO}/blob/master/LICENSE",
     },
     openapi_tags=tags_metadata,
     default_response_class=ORJSONResponse,
@@ -68,12 +126,15 @@ app = FastAPI(
         ),
     ],
     responses={
-        **build_response(500, default=UNEXPECTED, not_found_in_db=NOT_IN_DYNAMO),
-        **build_response(422, field_required=FIELD_REQUIRED, bad_type=BAD_TYPE),
+        **build_response(
+            500, default=UNEXPECTED, not_found_in_db=NOT_IN_DYNAMO
+        ),
+        **build_response(
+            422, field_required=FIELD_REQUIRED, bad_type=BAD_TYPE
+        ),
     },
 )
 
-app.logger = custom_loguru_app_logger()  # disabling could disfigure logs
 app.include_router(v1_router, prefix="/v1")  # MUST
 
 try:  # try to customize fast-api app
